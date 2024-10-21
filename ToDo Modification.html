@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Task Manager</title>
+    <style>
+      
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background-color: rgb(0, 218, 234);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 800px;
+            margin: 20px auto;
+            background: #e9a237;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            color:purple;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .task-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+input#taskTitle,  
+textarea#taskDescription,
+input#taskDeadline,
+        select
+        {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 16px;
+            height:50px;
+            color:blue;
+            background-color:beige;
+        }
+
+button {
+    background-color: #007bff;
+    color: white;
+    border: none;
+    cursor: pointer;
+     width: 100px; 
+    height: 50px; 
+    align-self: center; 
+    border-radius: 16px; 
+    padding:10px; 
+}
+
+button:hover {
+    background-color: #0056b3;
+    color:white;
+}
+        .task-list,
+        .completed-tasks {
+            margin-top: 30px;
+        }
+
+        ul {
+            list-style-type: none;
+        }
+
+        .task-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            margin-bottom: 10px;
+            border-radius: 5px;
+            color: white;
+        }
+
+    
+        .high-priority {
+            background-color: orangered;
+        
+        }
+
+        .medium-priority {
+            background-color: #ffc107;
+         
+        }
+
+        .low-priority {
+            background-color: #28a745;
+            
+        }
+        .task-category-work ,.task-category-personal {
+            font-weight: bold;
+            color: #6f42c1;
+            border-radius:16px;
+
+        }
+        .completed-task {
+            background-color: #ccc !important;
+            color:brown;
+            
+        } 
+    .remove-button {
+    background-color: blue; 
+    color: white; 
+    border: none;
+    cursor: pointer;
+    padding: 10px;
+    border-radius:16px;
+}
+        
+</style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Todo App</h1>
+        <div class="task-form">
+            <input type="text" id="taskTitle" placeholder="Task Title" required>
+            <textarea id="taskDescription" placeholder="Task Description"></textarea>
+            <input type="datetime-local" id="taskDeadline" required>
+
+            <select id="taskPriority">
+                <!-- <option value="Priority">Select Priority</option> -->
+                <option value="high">High Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="low">Low Priority</option>
+            </select>
+
+            <select id="taskCategory">
+                <!-- <option value="Category">Select Category</option> -->
+                <option value="work">Work</option>
+                <option value="personal">Personal</option>
+            </select>
+
+            <button onclick="addTask()">Add Task</button>
+        </div>
+
+        <div class="task-list">
+            <h2>Tasks</h2>
+            <ul id="taskContainer"></ul>
+        </div>
+
+        <div class="completed-tasks">
+            <h2>Completed Tasks</h2>
+            <ul id="completedTasksContainer"></ul>
+        </div>
+    </div>
+   <script>
+    
+    function addTask() {
+        const taskTitle = document.getElementById("taskTitle").value;
+        const taskDescription = document.getElementById("taskDescription").value;
+        const taskDeadline = document.getElementById("taskDeadline").value;
+        const taskPriority = document.getElementById("taskPriority").value;
+        const taskCategory = document.getElementById("taskCategory").value;
+
+        if (taskTitle == "" || taskDeadline == ""  ) {
+            alert("Please fill all the fields.");
+            return;
+        }
+
+        const taskContainer = document.getElementById("taskContainer");
+        const taskItem = document.createElement("li");
+        taskItem.classList.add("task-item", `${taskPriority}-priority`);
+        taskItem.setAttribute("data-deadline", taskDeadline); 
+
+        taskItem.innerHTML = `
+            <div>
+                <span class="task-category-${taskCategory}">${taskCategory.toUpperCase()} - </span>
+                <strong>${taskTitle}</strong> <br>
+                <small>Deadline: ${new Date(taskDeadline).toLocaleString()}</small>
+            </div>
+            <button onclick="completeTask(this)">Complete</button>
+        `;
+
+        taskContainer.appendChild(taskItem);
+        clearForm();
+    }
+
+    function clearForm() {
+        document.getElementById("taskTitle").value = "";
+        document.getElementById("taskDescription").value = "";
+        document.getElementById("taskDeadline").value = "";
+        document.getElementById("taskPriority").value = "";
+        document.getElementById("taskCategory").value = "";
+    }
+
+    function completeTask(button) {
+        const taskItem = button.parentElement;
+
+        if (taskItem.classList.contains("completed-task")) {
+            return;
+        }
+
+        taskItem.classList.add("completed-task");
+
+        const completedTasksContainer = document.getElementById("completedTasksContainer");
+
+        button.remove();
+
+        taskItem.innerHTML += `<button onclick="removeTask(this)">Remove</button>`;
+
+        completedTasksContainer.appendChild(taskItem);
+    }
+
+    function removeTask(button) {
+        const taskItem = button.parentElement;
+        taskItem.remove();
+    }
+
+        function checkDeadlines() {
+            const tasks = document.querySelectorAll('.task-item');
+
+            tasks.forEach(task => {
+                const deadline = new Date(task.getAttribute('data-deadline'));
+                const now = new Date();
+                const timeRemaining = deadline - now;
+
+                if (!task.classList.contains("completed-task")) {
+                    
+                    if (timeRemaining <= 60000 && timeRemaining > 0) {
+                      
+                        if (!task.classList.contains('alerted')) {
+                            task.classList.add('alerted'); 
+                        }
+                 
+                        alert(`Hurry up! "${task.querySelector('strong').textContent}"deadline  is less than 1 minute!`);
+                        task.style.backgroundColor = "red"; 
+
+                    } else if (timeRemaining <= 0) {
+                       
+                        alert(` "${task.querySelector('strong').textContent}"  deadline time already completed!`);
+                        task.style.backgroundColor = "darkred"; 
+                    }
+                }
+            });
+        }
+
+        setInterval(checkDeadlines, 60000);
+        checkDeadlines();
+
+</script>
+</body>
+</html>
+
+
+
+
+
